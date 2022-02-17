@@ -1,0 +1,22 @@
+{
+  "name": "native-map",
+  "version": "0.1.0",
+  "description": "A native web component used to render interactive maps",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "olivier.guyot@camptocamp.com",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "ol": "^6.12.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@types/geojson": "^7946.0.8",
+    "babel-jest": "^27.5.1",
+    "jest": "^27.5.1",
+    "prettier": "^2.5.1"
+  }
+}
