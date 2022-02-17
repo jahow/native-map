@@ -10,6 +10,15 @@ import {
   setView,
 } from "./service/openlayers";
 
+// add default styling for native-map elements
+const elStyle = document.createElement("style");
+elStyle.innerHTML = `native-map {
+  width: 400px;
+  height: 300px;
+  display: block;
+}`;
+document.head.appendChild(elStyle);
+
 class NativeMapElement extends HTMLElement {
   get context() {
     return {}; // TODO: return current map state
@@ -35,13 +44,11 @@ class NativeMapElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.style.width = "600px";
-    this.style.height = "400px";
-    this.style.display = "block";
     this.olMap = createMap(this);
     if (this.incomingContext) {
       this.handleContextChanged(this.incomingContext, null);
     }
+    this.olMap.updateSize();
   }
 
   disconnectedCallback() {

@@ -42,7 +42,7 @@ export function createMap(target) {
     })
   );
 
-  return map;
+  return olMap;
 }
 
 /**
