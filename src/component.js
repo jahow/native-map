@@ -35,7 +35,10 @@ class NativeMapElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.olMap = createMap();
+    this.style.width = "600px";
+    this.style.height = "400px";
+    this.style.display = "block";
+    this.olMap = createMap(this);
     if (this.incomingContext) {
       this.handleContextChanged(this.incomingContext, null);
     }

@@ -11,12 +11,16 @@ import VectorSource from "ol/source/Vector";
 import { GeoJSON } from "ol/format";
 
 /**
+ * @param {HTMLElement} target
  * @returns {OlMap} Newly created OpenLayers map
  */
-export function createMap() {
-  const map = new OlMap({
-    view: new OlView(),
-    target: this,
+export function createMap(target) {
+  const olMap = new OlMap({
+    view: new OlView({
+      zoom: 3,
+      center: [0, 0],
+    }),
+    target,
     controls: defaultControls({
       zoom: false,
       rotate: false,
@@ -24,7 +28,7 @@ export function createMap() {
   });
 
   // add positron basemap
-  map.addLayer(
+  olMap.addLayer(
     new TileLayer({
       source: new XYZSource({
         urls: [
@@ -34,6 +38,7 @@ export function createMap() {
         ],
         crossOrigin: "anonymous",
       }),
+      zIndex: -999,
     })
   );
 

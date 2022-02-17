@@ -4,7 +4,9 @@
   "description": "A native web component used to render interactive maps",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "demo": "webpack-dev-server --config demo/webpack.config.js",
+    "build:demo": "webpack --config demo/webpack.config.js --mode production"
   },
   "author": "olivier.guyot@camptocamp.com",
   "license": "GPL-3.0-or-later",
@@ -16,7 +18,12 @@
     "@babel/preset-env": "^7.16.11",
     "@types/geojson": "^7946.0.8",
     "babel-jest": "^27.5.1",
+    "babel-loader": "^8.2.3",
+    "html-webpack-plugin": "^5.5.0",
     "jest": "^27.5.1",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
   }
 }
