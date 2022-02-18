@@ -19,6 +19,7 @@ export function createMap(target) {
     view: new OlView({
       zoom: 3,
       center: [0, 0],
+      multiWorld: true,
     }),
     target,
     controls: defaultControls({
@@ -122,6 +123,7 @@ export function setView(olMap, view) {
         view.center,
         olMap.getView().getProjection().getCode()
       ),
+      multiWorld: true,
     })
   );
 }

@@ -24,7 +24,7 @@ npm install @camptocamp/native-map
 ```js
 import '@camptocamp/native-map'
 
-const nativeMap = document.getElementsByName('native-map');
+const nativeMap = document.getElementById('map');
 nativeMap.context = {
   view: {
     zoom: 3,

@@ -1,3 +1,36 @@
 import "@camptocamp/native-element";
 
-console.log("hello world");
+const DEFAULT_CODE = `const mapEl = document.getElementById('map');
+
+mapEl.context = {
+  view: {
+    zoom: 6,
+    center: [4, 47]
+  },
+  layers: [
+    {
+      type: 'wms',
+      url: 'https://www.geo2france.fr/geoserver/spld/ows',
+      name: 'cantons',
+    },
+    {
+      type: 'wms',
+      url: 'http://www.ifremer.fr/services/wms/sismer',
+      name: 'CAMPAGNES_BATHY_TRAITEE_GM'
+    }
+  ]
+};`;
+
+const codeInputEl = document.getElementById("code-input");
+const runBtn = document.getElementById("run-btn");
+
+function execCode() {
+  const code = codeInputEl.value;
+  const execFn = new Function(code);
+  execFn();
+}
+
+codeInputEl.value = DEFAULT_CODE;
+execCode();
+
+runBtn.addEventListener("click", execCode);

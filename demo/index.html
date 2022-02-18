@@ -16,23 +16,40 @@
       integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
       crossorigin="anonymous"
     ></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Dongle:wght@300;400;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/base16/railscasts.min.css"
-    />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
-    <div class="row">
-      <div class="col">Hello world!</div>
-      <div class="col">
-        <native-map style="width: 100%; height: 90vh"></native-map>
+    <div class="container-fluid h-100 d-flex flex-column">
+      <div class="row justify-content-around my-5">
+        <div class="col-6">
+          <p class="display-4">native-map</p>
+          <p class="lead text-muted">
+            A web component for rendering 🌍 maps declaratively.
+          </p>
+        </div>
+      </div>
+      <div class="row flex-grow-1">
+        <div class="col d-flex flex-column">
+          <div class="d-flex flex-row align-items-center mb-3">
+            <div class="flex-grow-1">Write code here and click "run".</div>
+            <button type="button" id="run-btn" class="btn btn-success">
+              Run!
+            </button>
+          </div>
+          <textarea
+            spellcheck="false"
+            class="form-control flex-grow-1 mb-4 font-monospace"
+            id="code-input"
+          ></textarea>
+        </div>
+        <div class="col">
+          <native-map id="map" style="width: 100%; height: 100%"></native-map>
+        </div>
       </div>
     </div>
   </body>
