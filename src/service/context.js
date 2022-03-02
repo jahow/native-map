@@ -52,21 +52,23 @@ function hasLayer(context, layer) {
  * @returns {{ layer: Layer, position: number }[]} Empty array if no layers changed
  */
 export function getAddedLayers(newContext, oldContext) {
-  return !newContext.layers || newContext.layers === oldContext?.layers
-    ? []
-    : newContext.layers.reduce(
-        (prev, layer, i) =>
-          oldContext !== null && hasLayer(oldContext, layer)
-            ? prev
-            : [
-                ...prev,
-                {
-                  layer,
-                  position: i,
-                },
-              ],
-        []
-      );
+  if (!("layers" in newContext)) return [];
+  if (oldContext === null || !("layers" in oldContext))
+    return newContext.layers.map((layer, position) => ({ layer, position }));
+  if (newContext.layers === oldContext.layers) return [];
+  return newContext.layers.reduce(
+    (prev, layer, i) =>
+      hasLayer(oldContext, layer)
+        ? prev
+        : [
+            ...prev,
+            {
+              layer,
+              position: i,
+            },
+          ],
+    []
+  );
 }
 
 /**
@@ -75,11 +77,17 @@ export function getAddedLayers(newContext, oldContext) {
  * @returns {Layer[]} Empty array if no layers changed
  */
 export function getRemovedLayers(newContext, oldContext) {
-  return !newContext.layers || newContext.layers === oldContext?.layers
-    ? []
-    : newContext.layers.filter((layer, i) =>
-        equalsLayer(oldContext?.layers?.[i], layer)
-      );
+  if (
+    oldContext === null ||
+    !("layers" in newContext) ||
+    !("layers" in oldContext) ||
+    newContext.layers === oldContext.layers
+  )
+    return [];
+  return oldContext.layers.reduce(
+    (prev, layer, i) => (hasLayer(newContext, layer) ? prev : [...prev, layer]),
+    []
+  );
 }
 
 /**
@@ -88,5 +96,11 @@ export function getRemovedLayers(newContext, oldContext) {
  * @returns {boolean} true if a new view was specified
  */
 export function hasViewChanged(newContext, oldContext) {
+  if (!("view" in newContext)) {
+    return false;
+  }
+  if (oldContext === null || !("view" in oldContext)) {
+    return true;
+  }
   return newContext.view !== oldContext?.view;
 }
