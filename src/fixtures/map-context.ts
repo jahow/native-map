@@ -18,6 +18,12 @@ export const MAP_CTX_LAYER_WMS_FIXTURE: MapContextLayer = {
   name: 'commune_actuelle_3857',
 };
 
+export const MAP_CTX_LAYER_WFS_FIXTURE: MapContextLayer = {
+  type: 'wfs',
+  url: 'https://www.geograndest.fr/geoserver/region-grand-est/ows?',
+  name: 'ms:commune_actuelle_3857',
+};
+
 export const MAP_CTX_LAYER_GEOJSON_FIXTURE: MapContextLayerGeojson = {
   type: 'geojson',
   data: FEATURE_COLLECTION_POLYGON_FIXTURE_4326,
@@ -26,6 +32,12 @@ export const MAP_CTX_LAYER_GEOJSON_FIXTURE: MapContextLayerGeojson = {
 export const MAP_CTX_LAYER_GEOJSON_REMOTE_FIXTURE: MapContextLayerGeojson = {
   type: 'geojson',
   url: 'https://my.host.com/data/regions.json',
+};
+
+export const MAP_CTX_LAYER_WMTS_FIXTURE: MapContextLayer = {
+  type: 'wmts',
+  url: 'https://www.geograndest.fr/geoserver/region-grand-est/wmts?',
+  name: 'commune_actuelle_3857',
 };
 
 export const MAP_CTX_VIEW_FIXTURE: MapContextView = {

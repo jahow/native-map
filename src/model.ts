@@ -14,6 +14,7 @@ export interface MapContextLayerWms {
   type: 'wms';
   url: string;
   name: string;
+  tiled?: boolean;
 }
 
 interface MapContextLayerWfs {
