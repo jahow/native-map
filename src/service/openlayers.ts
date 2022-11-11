@@ -31,11 +31,10 @@ const DEFAULT_BASELAYER_CONTEXT: MapContextLayerXyz = {
 };
 
 /**
- * @param context
  * @param target
  * @returns Newly created OpenLayers map
  */
-export function createMap(context: MapContext, target: HTMLElement) {
+export function createMap(target: HTMLElement) {
   const olMap = new OlMap({
     target,
     controls: defaultControls({
@@ -43,18 +42,18 @@ export function createMap(context: MapContext, target: HTMLElement) {
       rotate: false,
     }),
   });
-  if (!context.noBaseMap) {
-    // add basemap synchronously
-    olMap.addLayer(
-      new TileLayer({
-        source: new XYZSource({
-          urls: DEFAULT_BASELAYER_CONTEXT.urls,
-          crossOrigin: 'anonymous',
-        }),
-        zIndex: -999,
-      })
-    );
-  }
+  //if (!context.noBaseMap) { // FIXME: restore differently
+  // add basemap synchronously
+  olMap.addLayer(
+    new TileLayer({
+      source: new XYZSource({
+        urls: DEFAULT_BASELAYER_CONTEXT.urls,
+        crossOrigin: 'anonymous',
+      }),
+      zIndex: -999,
+    })
+  );
+  //}
   return olMap;
 }
 

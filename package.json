@@ -2,7 +2,12 @@
   "name": "native-map",
   "version": "0.1.0",
   "description": "A native web component used to render interactive maps",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "browser": "./dist/index.js",
+  "types": "./src/index.ts",
+  "files": [
+    "./dist"
+  ],
   "scripts": {
     "test": "jest",
     "demo": "webpack-dev-server --config demo/webpack.config.js",

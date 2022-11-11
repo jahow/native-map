@@ -21,7 +21,7 @@ elStyle.innerHTML = `native-map {
 }`;
 document.head.appendChild(elStyle);
 
-class NativeMapElement extends HTMLElement {
+export class NativeMapElement extends HTMLElement {
   incomingContext: MapContext = null;
   olMap: OlMap = null;
 
