@@ -3,25 +3,21 @@ import OlView from 'ol/View';
 import { defaults as defaultControls } from 'ol/control';
 import TileLayer from 'ol/layer/Tile';
 import XYZSource from 'ol/source/XYZ';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, transformExtent } from 'ol/proj';
 import ImageLayer from 'ol/layer/Image';
 import ImageWMS from 'ol/source/ImageWMS';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
-import { MapContextLayer, MapContextView } from '../model';
+import { MapContext, MapContextLayer, MapContextView } from '../model';
 
 /**
+ * @param context
  * @param target
  * @returns Newly created OpenLayers map
  */
-export function createMap(target: HTMLElement) {
+export function createMap(context: MapContext, target: HTMLElement) {
   const olMap = new OlMap({
-    view: new OlView({
-      zoom: 3,
-      center: [0, 0],
-      multiWorld: true,
-    }),
     target,
     controls: defaultControls({
       zoom: false,
@@ -29,20 +25,22 @@ export function createMap(target: HTMLElement) {
     }),
   });
 
-  // add positron basemap
-  olMap.addLayer(
-    new TileLayer({
-      source: new XYZSource({
-        urls: [
-          'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-          'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-          'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        ],
-        crossOrigin: 'anonymous',
-      }),
-      zIndex: -999,
-    })
-  );
+  if (!context.noBaseMap) {
+    // add positron basemap
+    olMap.addLayer(
+      new TileLayer({
+        source: new XYZSource({
+          urls: [
+            'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+          ],
+          crossOrigin: 'anonymous',
+        }),
+        zIndex: -999,
+      })
+    );
+  }
 
   return olMap;
 }
@@ -77,7 +75,8 @@ export function addLayer(
       break;
     }
     case 'geojson': {
-      const features = new GeoJSON().readFeatures(layer.geojson, {
+      if (!('data' in layer)) return;
+      const features = new GeoJSON().readFeatures(layer.data, {
         dataProjection: 'EPSG:4326',
         featureProjection: olMap.getView().getProjection().getCode(),
       });
@@ -91,8 +90,6 @@ export function addLayer(
       );
       break;
     }
-    default:
-      throw new Error(`Unrecognized layer type: ${layer.type}`);
   }
 }
 
@@ -111,14 +108,33 @@ export function removeLayer(olMap: OlMap, layer: MapContextLayer) {
 }
 
 export function setView(olMap: OlMap, view: MapContextView) {
-  olMap.setView(
-    new OlView({
-      zoom: view.zoom,
-      center: fromLonLat(
-        view.center,
-        olMap.getView().getProjection().getCode()
-      ),
-      multiWorld: true,
-    })
-  );
+  const {
+    center: centerInViewProj,
+    zoom,
+    extent,
+    maxZoom,
+    maxExtent,
+    srs,
+  } = view;
+  const mapSrs = srs || 'EPSG:3857';
+  const center = centerInViewProj
+    ? fromLonLat(centerInViewProj, mapSrs)
+    : [0, 0];
+  const olView = new OlView({
+    center,
+    zoom,
+    maxZoom,
+    extent: maxExtent
+      ? transformExtent(maxExtent, 'EPSG:4326', mapSrs)
+      : undefined,
+    multiWorld: false,
+    constrainResolution: true,
+    projection: srs,
+  });
+  if (extent) {
+    olView.fit(transformExtent(extent, 'EPSG:4326', mapSrs), {
+      size: olMap.getSize(),
+    });
+  }
+  olMap.setView(olView);
 }

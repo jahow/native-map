@@ -1,12 +1,14 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  testEnvironment: 'node',
+  preset: 'ts-jest',
+  testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.ts$': [
+    '^.+\\.[tj]s$': [
       'ts-jest',
       {
         tsconfig: 'tsconfig.test.json',
       },
     ],
   },
+  transformIgnorePatterns: ['node_modules/(?!(ol))'],
 };

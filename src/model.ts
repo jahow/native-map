@@ -50,15 +50,19 @@ export type MapContextLayer =
   | MapContextLayerXyz
   | MapContextLayerGeojson;
 
+export type MapContextViewExtent = [number, number, number, number];
+
 export interface MapContextView {
   center?: [number, number]; // expressed in long/lat (EPSG:4326)
   zoom?: number;
-  extent?: [number, number, number, number]; // expressed in long/lat (EPSG:4326)
+  extent?: MapContextViewExtent; // expressed in long/lat (EPSG:4326)
   maxZoom?: number;
-  maxExtent?: [number, number, number, number]; // expressed in long/lat (EPSG:4326)
+  maxExtent?: MapContextViewExtent; // expressed in long/lat (EPSG:4326)
+  srs?: string;
 }
 
 export interface MapContext {
   view?: MapContextView;
   layers?: MapContextLayer[];
+  noBaseMap?: boolean; // if true, the built-in base map will not be added; default to false
 }
