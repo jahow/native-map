@@ -1,34 +1,11 @@
 import { FeatureCollection } from 'geojson';
+import { MapContext, MapContextLayer } from '../model';
 
-export interface MapView {
-  zoom: number;
-  center: [number, number]; // center Expressed in Longitude, latitude (degrees)
-  srs?: string; // Default is EPSG:3857
-}
-
-export interface WmsLayer {
-  type: 'wms';
-  url: string;
-  name: string;
-}
-
-export interface GeoJSONLayer {
-  type: 'geojson';
-  geojson: FeatureCollection;
-}
-
-export type MapLayer = WmsLayer | GeoJSONLayer;
-
-export interface MapContext {
-  view?: MapView;
-  layers?: MapLayer[];
-}
-
-function equalsLayer(layerA: MapLayer, layerB: MapLayer) {
+function equalsLayer(layerA: MapContextLayer, layerB: MapContextLayer) {
   return layerA === layerB;
 }
 
-function hasLayer(context: MapContext, layer: MapLayer) {
+function hasLayer(context: MapContext, layer: MapContextLayer) {
   return context.layers?.some((l) => equalsLayer(layer, l));
 }
 
@@ -40,7 +17,7 @@ function hasLayer(context: MapContext, layer: MapLayer) {
 export function getAddedLayers(
   newContext: MapContext,
   oldContext?: MapContext
-): { layer: MapLayer; position: number }[] {
+): { layer: MapContextLayer; position: number }[] {
   if (!('layers' in newContext)) return [];
   if (!oldContext || !('layers' in oldContext))
     return newContext.layers.map((layer, position) => ({ layer, position }));
@@ -68,7 +45,7 @@ export function getAddedLayers(
 export function getRemovedLayers(
   newContext: MapContext,
   oldContext?: MapContext
-): MapLayer[] {
+): MapContextLayer[] {
   if (
     !oldContext ||
     !('layers' in newContext) ||

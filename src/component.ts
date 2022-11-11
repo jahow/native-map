@@ -2,7 +2,6 @@ import {
   getAddedLayers,
   getRemovedLayers,
   hasViewChanged,
-  MapContext,
 } from './service/context';
 import {
   addLayer,
@@ -11,6 +10,7 @@ import {
   setView,
 } from './service/openlayers';
 import OlMap from 'ol/Map';
+import { MapContext } from './model';
 
 // add default styling for native-map elements
 const elStyle = document.createElement('style');

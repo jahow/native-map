@@ -9,7 +9,7 @@ import ImageWMS from 'ol/source/ImageWMS';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
-import { MapLayer, MapView } from './context';
+import { MapContextLayer, MapContextView } from '../model';
 
 /**
  * @param target
@@ -52,7 +52,11 @@ export function createMap(target: HTMLElement) {
  * @param layer
  * @param position Position of the layer, 0-based, from background to foreground
  */
-export function addLayer(olMap: OlMap, layer: MapLayer, position: number) {
+export function addLayer(
+  olMap: OlMap,
+  layer: MapContextLayer,
+  position: number
+) {
   const layerProps = {
     zIndex: position,
     properties: { contextLayer: layer },
@@ -92,18 +96,21 @@ export function addLayer(olMap: OlMap, layer: MapLayer, position: number) {
   }
 }
 
-function getMapLayerFromContextLayer(olMap: OlMap, contextLayer: MapLayer) {
+function getMapLayerFromContextLayer(
+  olMap: OlMap,
+  contextLayer: MapContextLayer
+) {
   return olMap
     .getAllLayers()
     .find((olLayer) => olLayer.get('contextLayer') === contextLayer);
 }
 
-export function removeLayer(olMap: OlMap, layer: MapLayer) {
+export function removeLayer(olMap: OlMap, layer: MapContextLayer) {
   const toRemove = getMapLayerFromContextLayer(olMap, layer);
   olMap.removeLayer(toRemove);
 }
 
-export function setView(olMap: OlMap, view: MapView) {
+export function setView(olMap: OlMap, view: MapContextView) {
   olMap.setView(
     new OlView({
       zoom: view.zoom,
