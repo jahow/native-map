@@ -5,16 +5,18 @@ import TileLayer from "ol/layer/Tile";
 import XYZSource from "ol/source/XYZ";
 import { fromLonLat } from "ol/proj";
 import ImageLayer from "ol/layer/Image";
-import { ImageWMS } from "ol/source";
+import {Options as LayerOptions} from "ol/layer/Base";
+import ImageWMS from "ol/source/ImageWMS";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { GeoJSON } from "ol/format";
+import {MapLayer, MapView} from './context'
 
 /**
- * @param {HTMLElement} target
- * @returns {OlMap} Newly created OpenLayers map
+ * @param target
+ * @returns Newly created OpenLayers map
  */
-export function createMap(target) {
+export function createMap(target: HTMLElement) {
   const olMap = new OlMap({
     view: new OlView({
       zoom: 3,
@@ -47,14 +49,14 @@ export function createMap(target) {
 }
 
 /**
- * @param {OlMap} olMap
- * @param {Layer} layer
- * @param {number} position Position of the layer, 0-based, from background to foreground
+ * @param olMap
+ * @param layer
+ * @param position Position of the layer, 0-based, from background to foreground
  */
-export function addLayer(olMap, layer, position) {
+export function addLayer(olMap: OlMap, layer: MapLayer, position: number) {
   const layerProps = {
     zIndex: position,
-    contextLayer: layer,
+    properties: {contextLayer: layer,}
   };
   switch (layer.type) {
     case "wms": {
@@ -91,31 +93,18 @@ export function addLayer(olMap, layer, position) {
   }
 }
 
-/**
- * @param {OlMap} olMap
- * @param {Layer} contextLayer
- * @returns {import('ol/layer').Layer}
- */
-function getMapLayerFromContextLayer(olMap, contextLayer) {
+function getMapLayerFromContextLayer(olMap: OlMap, contextLayer: MapLayer) {
   return olMap
     .getAllLayers()
     .find((olLayer) => olLayer.get("contextLayer") === contextLayer);
 }
 
-/**
- @param {OlMap} olMap
- * @param {Layer} layer
- */
-export function removeLayer(olMap, layer) {
+export function removeLayer(olMap: OlMap, layer: MapLayer) {
   const toRemove = getMapLayerFromContextLayer(olMap, layer);
   olMap.removeLayer(toRemove);
 }
 
-/**
- @param {OlMap} olMap
- * @param {View} view
- */
-export function setView(olMap, view) {
+export function setView(olMap: OlMap, view: MapView) {
   olMap.setView(
     new OlView({
       zoom: view.zoom,

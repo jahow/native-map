@@ -1,14 +1,15 @@
 import {
   getAddedLayers,
   getRemovedLayers,
-  hasViewChanged,
-} from "./service/context";
+  hasViewChanged, MapContext,
+} from './service/context'
 import {
   addLayer,
   createMap,
   removeLayer,
   setView,
 } from "./service/openlayers";
+import OlMap from 'ol/Map'
 
 // add default styling for native-map elements
 const elStyle = document.createElement("style");
@@ -20,27 +21,20 @@ elStyle.innerHTML = `native-map {
 document.head.appendChild(elStyle);
 
 class NativeMapElement extends HTMLElement {
+  incomingContext: MapContext = null
+  olMap: OlMap = null
+
   get context() {
     return {}; // TODO: return current map state
   }
 
-  set context(val) {
+  set context(val: MapContext) {
     this.handleContextChanged(val, this.incomingContext);
     this.incomingContext = val;
   }
 
   constructor() {
     super();
-
-    /**
-     * @type {import('ol').Map}
-     */
-    this.olMap = null;
-
-    /**
-     * @type {MapContext|null}
-     */
-    this.incomingContext = null;
   }
 
   connectedCallback() {
@@ -52,6 +46,7 @@ class NativeMapElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    if (this.olMap === null) return;
     this.olMap.dispose();
     this.olMap = null;
   }
@@ -60,7 +55,8 @@ class NativeMapElement extends HTMLElement {
    * @param {MapContext} newContext
    * @param {MapContext|null} oldContext
    */
-  handleContextChanged(newContext, oldContext) {
+  handleContextChanged(newContext: MapContext, oldContext: MapContext) {
+    if (this.olMap === null) return;
     getAddedLayers(newContext, oldContext).map(({ layer, position }) =>
       addLayer(this.olMap, layer, position)
     );
