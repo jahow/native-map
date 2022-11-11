@@ -9,7 +9,7 @@ import {Options as LayerOptions} from "ol/layer/Base";
 import ImageWMS from "ol/source/ImageWMS";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { GeoJSON } from "ol/format";
+import GeoJSON from "ol/format/GeoJSON";
 import {MapLayer, MapView} from './context'
 
 /**
