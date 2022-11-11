@@ -1,4 +1,4 @@
-import "@camptocamp/native-element";
+import '@camptocamp/native-element';
 
 const DEFAULT_CODE = `const mapEl = document.getElementById('map');
 
@@ -21,8 +21,8 @@ mapEl.context = {
   ]
 };`;
 
-const codeInputEl = document.getElementById("code-input");
-const runBtn = document.getElementById("run-btn");
+const codeInputEl = document.getElementById('code-input');
+const runBtn = document.getElementById('run-btn');
 
 function execCode() {
   const code = codeInputEl.value;
@@ -33,4 +33,4 @@ function execCode() {
 codeInputEl.value = DEFAULT_CODE;
 execCode();
 
-runBtn.addEventListener("click", execCode);
+runBtn.addEventListener('click', execCode);

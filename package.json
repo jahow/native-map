@@ -8,7 +8,9 @@
     "demo": "webpack-dev-server --config demo/webpack.config.js",
     "build:demo": "webpack --config demo/webpack.config.js --mode production",
     "typecheck": "tsc --noEmit",
-    "build:lib": "rimraf dist && esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --format=esm --splitting"
+    "build:lib": "rimraf dist && esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --format=esm --splitting",
+    "format:check": "prettier --check src demo",
+    "format:write": "prettier --write src demo"
   },
   "author": "olivier.guyot@camptocamp.com",
   "license": "GPL-3.0-or-later",
@@ -24,7 +26,7 @@
     "esbuild": "^0.15.13",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^29.3.1",
-    "prettier": "^2.5.1",
+    "prettier": "2.7.1",
     "rimraf": "^3.0.2",
     "ts-jest": "^29.0.3",
     "typescript": "^4.8.4",

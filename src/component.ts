@@ -1,18 +1,19 @@
 import {
   getAddedLayers,
   getRemovedLayers,
-  hasViewChanged, MapContext,
-} from './service/context'
+  hasViewChanged,
+  MapContext,
+} from './service/context';
 import {
   addLayer,
   createMap,
   removeLayer,
   setView,
-} from "./service/openlayers";
-import OlMap from 'ol/Map'
+} from './service/openlayers';
+import OlMap from 'ol/Map';
 
 // add default styling for native-map elements
-const elStyle = document.createElement("style");
+const elStyle = document.createElement('style');
 elStyle.innerHTML = `native-map {
   width: 400px;
   height: 300px;
@@ -21,8 +22,8 @@ elStyle.innerHTML = `native-map {
 document.head.appendChild(elStyle);
 
 class NativeMapElement extends HTMLElement {
-  incomingContext: MapContext = null
-  olMap: OlMap = null
+  incomingContext: MapContext = null;
+  olMap: OlMap = null;
 
   get context() {
     return {}; // TODO: return current map state
@@ -69,4 +70,4 @@ class NativeMapElement extends HTMLElement {
   }
 }
 
-customElements.define("native-map", NativeMapElement);
+customElements.define('native-map', NativeMapElement);

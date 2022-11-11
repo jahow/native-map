@@ -1,22 +1,22 @@
-const fs = require("fs");
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const fs = require('fs');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: "development",
+  mode: 'development',
   entry: {
-    app: path.resolve(__dirname, "index.js"),
+    app: path.resolve(__dirname, 'index.js'),
   },
   output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "[name].js",
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "index.html"),
+      template: path.resolve(__dirname, 'index.html'),
     }),
   ],
-  devtool: "source-map",
+  devtool: 'source-map',
   devServer: {
     // contentBase: __dirname,
   },
@@ -26,9 +26,9 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: {
-            presets: [["@babel/preset-env", { targets: { node: "10" } }]],
+            presets: [['@babel/preset-env', { targets: { node: '10' } }]],
           },
         },
       },
@@ -36,7 +36,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      "@camptocamp/native-element$": "../src",
+      '@camptocamp/native-element$': '../src',
     },
   },
 };

@@ -1,27 +1,27 @@
-import {FeatureCollection} from 'geojson'
+import { FeatureCollection } from 'geojson';
 
 export interface MapView {
-  zoom: number
-  center: [number,number] // center Expressed in Longitude, latitude (degrees)
-  srs?: string // Default is EPSG:3857
+  zoom: number;
+  center: [number, number]; // center Expressed in Longitude, latitude (degrees)
+  srs?: string; // Default is EPSG:3857
 }
 
 export interface WmsLayer {
-  type: 'wms'
-  url: string
-  name: string
+  type: 'wms';
+  url: string;
+  name: string;
 }
 
 export interface GeoJSONLayer {
-  type: 'geojson'
-  geojson: FeatureCollection
+  type: 'geojson';
+  geojson: FeatureCollection;
 }
 
-export type MapLayer = WmsLayer | GeoJSONLayer
+export type MapLayer = WmsLayer | GeoJSONLayer;
 
 export interface MapContext {
-  view?: MapView
-  layers?: MapLayer[]
+  view?: MapView;
+  layers?: MapLayer[];
 }
 
 function equalsLayer(layerA: MapLayer, layerB: MapLayer) {
@@ -37,9 +37,12 @@ function hasLayer(context: MapContext, layer: MapLayer) {
  * @param oldContext
  * @returns Empty array if no layers changed
  */
-export function getAddedLayers(newContext: MapContext, oldContext?: MapContext): { layer: MapLayer, position: number }[]{
-  if (!("layers" in newContext)) return [];
-  if (!oldContext|| !("layers" in oldContext))
+export function getAddedLayers(
+  newContext: MapContext,
+  oldContext?: MapContext
+): { layer: MapLayer; position: number }[] {
+  if (!('layers' in newContext)) return [];
+  if (!oldContext || !('layers' in oldContext))
     return newContext.layers.map((layer, position) => ({ layer, position }));
   if (newContext.layers === oldContext.layers) return [];
   return newContext.layers.reduce(
@@ -62,11 +65,14 @@ export function getAddedLayers(newContext: MapContext, oldContext?: MapContext):
  * @param oldContext
  * @returns Empty array if no layers changed
  */
-export function getRemovedLayers(newContext: MapContext, oldContext?: MapContext): MapLayer[] {
+export function getRemovedLayers(
+  newContext: MapContext,
+  oldContext?: MapContext
+): MapLayer[] {
   if (
     !oldContext ||
-    !("layers" in newContext) ||
-    !("layers" in oldContext) ||
+    !('layers' in newContext) ||
+    !('layers' in oldContext) ||
     newContext.layers === oldContext.layers
   )
     return [];
@@ -81,11 +87,14 @@ export function getRemovedLayers(newContext: MapContext, oldContext?: MapContext
  * @param oldContext
  * @returns true if a new view was specified
  */
-export function hasViewChanged(newContext: MapContext, oldContext?: MapContext) {
-  if (!("view" in newContext)) {
+export function hasViewChanged(
+  newContext: MapContext,
+  oldContext?: MapContext
+) {
+  if (!('view' in newContext)) {
     return false;
   }
-  if (!oldContext || !("view" in oldContext)) {
+  if (!oldContext || !('view' in oldContext)) {
     return true;
   }
   return newContext.view !== oldContext?.view;
