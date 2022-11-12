@@ -6,10 +6,12 @@ import {
   MAP_CTX_LAYER_WFS_FIXTURE,
   MAP_CTX_LAYER_WMS_FIXTURE,
   MAP_CTX_LAYER_WMTS_FIXTURE,
+  MAP_CTX_LAYER_XYZ_FIXTURE,
 } from '../fixtures/map-context';
 import {
   addLayer,
   createMap,
+  getFeaturesAtCoordinate,
   removeLayer,
   setHasBaseMap,
   setView,
@@ -20,11 +22,15 @@ import ImageWMS from 'ol/source/ImageWMS';
 import ImageLayer from 'ol/layer/Image';
 import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS';
-import { MapContextLayerWms } from '../model';
+import { LonLatCoords, MapContextLayerWms } from '../model';
 import BaseLayer from 'ol/layer/Base';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import WMTS from 'ol/source/WMTS';
+import { FEATURE_COLLECTION_POLYGON_FIXTURE_4326 } from '../fixtures/geojson';
+import OlFeature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import { fromLonLat } from 'ol/proj';
 
 describe('openlayers functions', () => {
   let map;
@@ -239,6 +245,120 @@ describe('openlayers functions', () => {
       });
       it('creates a new view', () => {
         expect(view).not.toEqual(prevView);
+      });
+    });
+  });
+
+  describe('getFeaturesAtCoordinate', () => {
+    beforeEach(() => {
+      (window as any).fetchResponseFactory = (url) =>
+        JSON.stringify(FEATURE_COLLECTION_POLYGON_FIXTURE_4326);
+      setView(map, MAP_CTX_FIXTURE.view);
+      map.renderSync();
+    });
+    describe('with a mix of image and vector layers', () => {
+      let featuresArrays;
+      let wfsLayer;
+      let geojsonLayer;
+      beforeEach(async () => {
+        const mapContext = {
+          ...MAP_CTX_FIXTURE,
+          layers: [
+            MAP_CTX_LAYER_WMS_FIXTURE,
+            MAP_CTX_LAYER_WFS_FIXTURE,
+            MAP_CTX_LAYER_GEOJSON_FIXTURE,
+            MAP_CTX_LAYER_XYZ_FIXTURE,
+            MAP_CTX_LAYER_WMTS_FIXTURE,
+          ],
+        };
+        await Promise.all(
+          mapContext.layers.map(
+            async (contextLayer, i) => await addLayer(map, contextLayer, i)
+          )
+        );
+        wfsLayer = map.getLayers().item(1);
+        geojsonLayer = map.getLayers().item(2);
+        const mockFeatures = [new OlFeature(new Point([1000, 2000]))];
+        jest
+          .spyOn(wfsLayer, 'getFeatures')
+          .mockImplementation(() => Promise.resolve(mockFeatures));
+        jest
+          .spyOn(geojsonLayer, 'getFeatures')
+          .mockImplementation(() => Promise.resolve(mockFeatures));
+
+        // query features
+        featuresArrays = await getFeaturesAtCoordinate(
+          map,
+          mapContext,
+          fromLonLat(mapContext.view.center) as LonLatCoords
+        );
+      });
+      it('resolves to an array of features arrays', () => {
+        expect(featuresArrays).toEqual([
+          FEATURE_COLLECTION_POLYGON_FIXTURE_4326.features,
+          [
+            {
+              geometry: {
+                coordinates: [0.008983152841195214, 0.01796630538797217],
+                type: 'Point',
+              },
+              properties: null,
+              type: 'Feature',
+            },
+          ],
+          [
+            {
+              geometry: {
+                coordinates: [0.008983152841195214, 0.01796630538797217],
+                type: 'Point',
+              },
+              properties: null,
+              type: 'Feature',
+            },
+          ],
+          [],
+          [],
+        ]);
+      });
+      it('calls getFeatures on the WFS layer', () => {
+        expect(wfsLayer.getFeatures).toHaveBeenCalledTimes(1);
+        expect(wfsLayer.getFeatures).toHaveBeenCalledWith([50, 50]);
+      });
+      it('calls getFeatures on the GeoJSON layer', () => {
+        expect(geojsonLayer.getFeatures).toHaveBeenCalledTimes(1);
+        expect(geojsonLayer.getFeatures).toHaveBeenCalledWith([50, 50]);
+      });
+    });
+    describe('with layers that are no queryable', () => {
+      let featuresArrays;
+      beforeEach(async () => {
+        const mapContext = {
+          ...MAP_CTX_FIXTURE,
+          layers: [
+            MAP_CTX_LAYER_WMS_FIXTURE,
+            { ...MAP_CTX_LAYER_WMS_FIXTURE, notQueryable: true },
+            { ...MAP_CTX_LAYER_WFS_FIXTURE, notQueryable: true },
+            { ...MAP_CTX_LAYER_XYZ_FIXTURE, notQueryable: true },
+          ],
+        };
+        await Promise.all(
+          mapContext.layers.map(
+            async (contextLayer, i) => await addLayer(map, contextLayer, i)
+          )
+        );
+        featuresArrays = await getFeaturesAtCoordinate(
+          map,
+          mapContext,
+          fromLonLat(mapContext.view.center) as LonLatCoords
+        );
+      });
+      it('returns an array with null for not queryable layers', () => {
+        expect(featuresArrays).toEqual([
+          FEATURE_COLLECTION_POLYGON_FIXTURE_4326.features,
+          null,
+          null,
+          null,
+        ]);
       });
     });
   });

@@ -2,7 +2,6 @@ import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { defaults as defaultControls } from 'ol/control';
 import TileLayer from 'ol/layer/Tile';
-import XYZSource from 'ol/source/XYZ';
 import XYZ from 'ol/source/XYZ';
 import { fromLonLat, transformExtent } from 'ol/proj';
 import ImageLayer from 'ol/layer/Image';
@@ -11,8 +10,12 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import {
+  LonLatCoords,
   MapContext,
   MapContextLayer,
+  MapContextLayerGeojson,
+  MapContextLayerWfs,
+  MapContextLayerWms,
   MapContextLayerXyz,
   MapContextView,
 } from '../model';
@@ -20,6 +23,9 @@ import TileWMS from 'ol/source/TileWMS';
 import WMTS from 'ol/source/WMTS';
 import { bbox as bboxStrategy } from 'ol/loadingstrategy';
 import BaseLayer from 'ol/layer/Base';
+import OlFeature from 'ol/Feature';
+import { Feature, FeatureCollection } from 'geojson';
+import { Geometry } from 'ol/geom';
 
 const DEFAULT_BASELAYER_CONTEXT: MapContextLayerXyz = {
   type: 'xyz',
@@ -168,6 +174,63 @@ function createLayerFromModel(
   }
 }
 
+function getGFIUrl(
+  layer: MapContextLayerWms,
+  map: OlMap,
+  coordinate: LonLatCoords
+) {
+  const olLayer = getMapLayerFromContextLayer(map, layer) as
+    | ImageLayer<ImageWMS>
+    | TileLayer<TileWMS>;
+  const view = map.getView();
+  const projection = view.getProjection();
+  const resolution = view.getResolution();
+  const source = olLayer.getSource();
+  const params = {
+    ...source.getParams(),
+    INFO_FORMAT: 'application/json',
+  };
+  return source.getFeatureInfoUrl(coordinate, resolution, projection, params);
+}
+
+function getVectorFeatures(
+  layer: MapContextLayerWfs | MapContextLayerGeojson,
+  map: OlMap,
+  coordinate: LonLatCoords
+) {
+  const olLayer = getMapLayerFromContextLayer(map, layer) as VectorLayer<
+    VectorSource<Geometry>
+  >;
+  const viewSrs = map.getView().getProjection();
+  return olLayer.getFeatures(map.getPixelFromCoordinate(coordinate)).then(
+    (features) =>
+      new GeoJSON().writeFeaturesObject(features, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: viewSrs,
+      }).features
+  );
+}
+
+function getFeaturesFromLayer(
+  layer: MapContextLayer,
+  map: OlMap,
+  coordinate: LonLatCoords
+): Promise<Feature[] | null> {
+  if (layer.notQueryable) return Promise.resolve(null);
+  switch (layer.type) {
+    case 'wmts':
+    case 'xyz':
+      return Promise.resolve([]);
+    case 'wms':
+      return fetch(getGFIUrl(layer, map, coordinate))
+        .then((resp) => resp.json())
+        .then((json: FeatureCollection) => json?.features || []);
+    case 'wfs':
+    case 'geojson':
+      return getVectorFeatures(layer, map, coordinate);
+  }
+}
+
 /**
  * @param olMap
  * @param layer
@@ -238,4 +301,25 @@ export function setView(olMap: OlMap, view: MapContextView) {
     });
   }
   olMap.setView(olView);
+}
+
+/**
+ * @param map
+ * @param context
+ * @param coordinate
+ * @returns An array of arrays; each layer in the map context is represented by one array, its position in the root
+ * array being the same as the layer's position in the map context; not queryable layers are represented by null
+ */
+export async function getFeaturesAtCoordinate(
+  map: OlMap,
+  context: MapContext,
+  coordinate: LonLatCoords
+): Promise<(Feature[] | null)[]> {
+  if (!context.layers) return [];
+  return Promise.all(
+    context.layers.map((layer) => getFeaturesFromLayer(layer, map, coordinate))
+  ).catch((e) => {
+    console.error('Something went wrong while querying layers', e);
+    return [];
+  });
 }

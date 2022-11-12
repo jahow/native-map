@@ -1,4 +1,10 @@
-import { FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection } from 'geojson';
+
+export type LonLatCoords = [number, number];
+
+interface MapContextBaseLayer {
+  notQueryable?: boolean; // defaults to fals
+}
 
 type SingleOrMultipleUrls =
   | {
@@ -44,17 +50,19 @@ export type MapContextLayerGeojson = {
     }
 );
 
-export type MapContextLayer =
-  | MapContextLayerWms
-  | MapContextLayerWmts
-  | MapContextLayerWfs
-  | MapContextLayerXyz
-  | MapContextLayerGeojson;
+export type MapContextLayer = MapContextBaseLayer &
+  (
+    | MapContextLayerWms
+    | MapContextLayerWmts
+    | MapContextLayerWfs
+    | MapContextLayerXyz
+    | MapContextLayerGeojson
+  );
 
 export type MapContextViewExtent = [number, number, number, number];
 
 export interface MapContextView {
-  center?: [number, number]; // expressed in long/lat (EPSG:4326)
+  center?: LonLatCoords;
   zoom?: number;
   extent?: MapContextViewExtent; // expressed in long/lat (EPSG:4326)
   maxZoom?: number;
@@ -66,4 +74,10 @@ export interface MapContext {
   view?: MapContextView;
   layers?: MapContextLayer[];
   noBaseMap?: boolean; // if true, the built-in base map will not be added; default to false
+}
+
+export interface FeaturesClickedEvent extends CustomEvent {
+  detail: {
+    features: Feature[][];
+  };
 }

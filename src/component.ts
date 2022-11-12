@@ -6,12 +6,13 @@ import {
 import {
   addLayer,
   createMap,
+  getFeaturesAtCoordinate,
   removeLayer,
   setHasBaseMap,
   setView,
 } from './service/openlayers';
 import OlMap from 'ol/Map';
-import { MapContext } from './model';
+import { FeaturesClickedEvent, LonLatCoords, MapContext } from './model';
 
 // add default styling for native-map elements
 const elStyle = document.createElement('style');
@@ -23,8 +24,8 @@ elStyle.innerHTML = `native-map {
 document.head.appendChild(elStyle);
 
 export class NativeMapElement extends HTMLElement {
-  incomingContext: MapContext = null;
-  olMap: OlMap = null;
+  private incomingContext: MapContext = null;
+  private olMap: OlMap = null;
 
   get context() {
     return {}; // TODO: return current map state
@@ -45,6 +46,19 @@ export class NativeMapElement extends HTMLElement {
       this.handleContextChanged(this.incomingContext, null);
     }
     this.olMap.updateSize();
+    this.olMap.on('click', async (event) => {
+      const coords = event.coordinate;
+      const features = await getFeaturesAtCoordinate(
+        this.olMap,
+        this.incomingContext,
+        coords as LonLatCoords
+      );
+      this.dispatchEvent(
+        new CustomEvent('featuresClicked', {
+          detail: { features },
+        }) as FeaturesClickedEvent
+      );
+    });
   }
 
   disconnectedCallback() {

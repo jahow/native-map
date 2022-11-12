@@ -11,4 +11,5 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: ['node_modules/(?!(ol))'],
+  setupFilesAfterEnv: ['./test-setup.js'],
 };
