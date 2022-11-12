@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "test": "jest",
-    "demo": "webpack-dev-server --config demo/webpack.config.js",
-    "build:demo": "webpack --config demo/webpack.config.js --mode production",
+    "demo": "concurrently \"npm run build:lib -- --watch\" \"webpack-dev-server --config demo/webpack.config.js\"",
+    "build:demo": "npm run build:lib && webpack --config demo/webpack.config.js --mode production",
     "typecheck": "tsc --noEmit",
     "build:lib": "rimraf dist && esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --format=esm --splitting",
     "format:check": "prettier --check src demo",
@@ -28,6 +28,7 @@
     "@types/geojson": "^7946.0.8",
     "@types/jest": "^29.2.2",
     "babel-loader": "^8.2.3",
+    "concurrently": "^7.5.0",
     "esbuild": "^0.15.13",
     "html-webpack-plugin": "^5.5.0",
     "isomorphic-fetch": "^3.0.0",

@@ -12,14 +12,12 @@ mapEl.context = {
       type: 'wms',
       url: 'https://www.geo2france.fr/geoserver/spld/ows',
       name: 'cantons',
-    },
-    {
-      type: 'wms',
-      url: 'http://www.ifremer.fr/services/wms/sismer',
-      name: 'CAMPAGNES_BATHY_TRAITEE_GM'
     }
   ]
-};`;
+};
+
+mapEl.addEventListener('featuresClicked', event => console.log('features clicked:', event.detail.features));
+`;
 
 const codeInputEl = document.getElementById('code-input');
 const runBtn = document.getElementById('run-btn');

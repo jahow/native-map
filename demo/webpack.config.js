@@ -36,7 +36,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      '@camptocamp/native-element$': '../src',
+      '@camptocamp/native-element$': '../dist',
     },
   },
 };
