@@ -69,7 +69,7 @@ export function hasParamChanged(
   newContext: MapContext,
   oldContext?: MapContext
 ) {
-  if (!(paramName in newContext)) {
+  if (!(paramName in newContext) && oldContext && paramName in oldContext) {
     return false;
   }
   if (!oldContext || !(paramName in oldContext)) {
