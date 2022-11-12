@@ -1,4 +1,3 @@
-import { FeatureCollection } from 'geojson';
 import { MapContext, MapContextLayer } from '../model';
 
 function equalsLayer(layerA: MapContextLayer, layerB: MapContextLayer) {
@@ -60,19 +59,21 @@ export function getRemovedLayers(
 }
 
 /**
+ @param paramName
  * @param newContext
  * @param oldContext
- * @returns true if a new view was specified
+ * @returns true if a param was specified wit a new value
  */
-export function hasViewChanged(
+export function hasParamChanged(
+  paramName: string,
   newContext: MapContext,
   oldContext?: MapContext
 ) {
-  if (!('view' in newContext)) {
+  if (!(paramName in newContext)) {
     return false;
   }
-  if (!oldContext || !('view' in oldContext)) {
+  if (!oldContext || !(paramName in oldContext)) {
     return true;
   }
-  return newContext.view !== oldContext?.view;
+  return newContext[paramName] !== oldContext?.[paramName];
 }

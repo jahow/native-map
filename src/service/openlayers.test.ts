@@ -7,7 +7,13 @@ import {
   MAP_CTX_LAYER_WMS_FIXTURE,
   MAP_CTX_LAYER_WMTS_FIXTURE,
 } from '../fixtures/map-context';
-import { addLayer, createMap, removeLayer, setView } from './openlayers';
+import {
+  addLayer,
+  createMap,
+  removeLayer,
+  setHasBaseMap,
+  setView,
+} from './openlayers';
 import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import ImageWMS from 'ol/source/ImageWMS';
@@ -24,26 +30,40 @@ describe('openlayers functions', () => {
   let map;
   beforeEach(() => {
     const div = document.createElement('div');
-    map = createMap(MAP_CTX_FIXTURE, div);
+    map = createMap(div);
     map.setSize([100, 100]);
   });
 
   describe('createMap', () => {
-    it('create a map', () => {
+    it('creates a map', () => {
       expect(map).toBeTruthy();
       expect(map).toBeInstanceOf(OlMap);
     });
     it('has a view with undefined center', () => {
       expect(map.getView().getCenter()).toBe(undefined);
     });
-    it('has one layer (base map) with low z-index', () => {
-      expect(map.getLayers().getLength()).toBe(1);
-      expect(map.getLayers().item(0).getZIndex()).toBeLessThan(-100);
+    it('has no layer', () => {
+      expect(map.getLayers().getLength()).toBe(0);
     });
-    describe('with noBaseMap = true', () => {
-      beforeEach(() => {
-        const div = document.createElement('div');
-        map = createMap({ ...MAP_CTX_FIXTURE, noBaseMap: true }, div);
+  });
+
+  describe('setHasBaseMap', () => {
+    describe('called with false and true', () => {
+      beforeEach(async () => {
+        await setHasBaseMap(map, false);
+        await setHasBaseMap(map, true);
+        await setHasBaseMap(map, true);
+      });
+      it('has one layer (base map) with low z-index', () => {
+        expect(map.getLayers().getLength()).toBe(1);
+        expect(map.getLayers().item(0).getZIndex()).toBeLessThan(-100);
+      });
+    });
+    describe('called with true and false', () => {
+      beforeEach(async () => {
+        await setHasBaseMap(map, true);
+        await setHasBaseMap(map, false);
+        await setHasBaseMap(map, false);
       });
       it('has no layer', () => {
         expect(map.getLayers().getLength()).toBe(0);
@@ -52,13 +72,7 @@ describe('openlayers functions', () => {
   });
 
   describe('addLayer', () => {
-    let map;
     let layer;
-    const mapContext = MAP_CTX_FIXTURE;
-    beforeEach(() => {
-      const div = document.createElement('div');
-      map = createMap(mapContext, div);
-    });
     describe('generic properties', () => {
       beforeEach(async () => {
         layer = await addLayer(map, MAP_CTX_LAYER_WMS_FIXTURE, 4);

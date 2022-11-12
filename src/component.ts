@@ -1,12 +1,13 @@
 import {
   getAddedLayers,
   getRemovedLayers,
-  hasViewChanged,
+  hasParamChanged,
 } from './service/context';
 import {
   addLayer,
   createMap,
   removeLayer,
+  setHasBaseMap,
   setView,
 } from './service/openlayers';
 import OlMap from 'ol/Map';
@@ -64,8 +65,11 @@ export class NativeMapElement extends HTMLElement {
     getRemovedLayers(newContext, oldContext).map((layer) =>
       removeLayer(this.olMap, layer)
     );
-    if (hasViewChanged(newContext, oldContext)) {
+    if (hasParamChanged('view', newContext, oldContext)) {
       setView(this.olMap, newContext.view);
+    }
+    if (hasParamChanged('noBaseMap', newContext, oldContext)) {
+      setHasBaseMap(this.olMap, !newContext.noBaseMap);
     }
   }
 }

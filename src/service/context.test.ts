@@ -1,4 +1,4 @@
-import { getAddedLayers, getRemovedLayers, hasViewChanged } from './context';
+import { getAddedLayers, getRemovedLayers, hasParamChanged } from './context';
 
 const SAMPLE_LAYERS = [{ url: 'abcd' }, { url: '1234' }, { url: 'xyz' }];
 
@@ -163,7 +163,7 @@ describe('context functions', () => {
     });
   });
 
-  describe('hasViewChanged', () => {
+  describe('hasParamChanged', () => {
     describe('map view is same obj', () => {
       beforeEach(() => {
         oldContext = {
@@ -174,7 +174,7 @@ describe('context functions', () => {
         };
       });
       it('returns false', () => {
-        expect(hasViewChanged(newContext, oldContext)).toBeFalsy();
+        expect(hasParamChanged('view', newContext, oldContext)).toBeFalsy();
       });
     });
     describe('no map view in new context', () => {
@@ -185,7 +185,7 @@ describe('context functions', () => {
         newContext = {};
       });
       it('returns false', () => {
-        expect(hasViewChanged(newContext, oldContext)).toBeFalsy();
+        expect(hasParamChanged('view', newContext, oldContext)).toBeFalsy();
       });
     });
     describe('no map view in old context', () => {
@@ -196,7 +196,7 @@ describe('context functions', () => {
         };
       });
       it('returns true', () => {
-        expect(hasViewChanged(newContext, oldContext)).toBeTruthy();
+        expect(hasParamChanged('view', newContext, oldContext)).toBeTruthy();
       });
     });
     describe('map view object is different in new context', () => {
@@ -209,7 +209,7 @@ describe('context functions', () => {
         };
       });
       it('returns true', () => {
-        expect(hasViewChanged(newContext, oldContext)).toBeTruthy();
+        expect(hasParamChanged('view', newContext, oldContext)).toBeTruthy();
       });
     });
     describe('old context is null', () => {
@@ -220,7 +220,7 @@ describe('context functions', () => {
         };
       });
       it('returns true', () => {
-        expect(hasViewChanged(newContext, oldContext)).toBeTruthy();
+        expect(hasParamChanged('view', newContext, oldContext)).toBeTruthy();
       });
     });
     describe('old context is null, new context has no view', () => {
@@ -229,7 +229,7 @@ describe('context functions', () => {
         newContext = {};
       });
       it('returns false', () => {
-        expect(hasViewChanged(newContext, oldContext)).toBeFalsy();
+        expect(hasParamChanged('view', newContext, oldContext)).toBeFalsy();
       });
     });
   });
