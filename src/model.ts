@@ -1,4 +1,7 @@
-import { Feature, FeatureCollection } from 'geojson';
+import { FeatureCollection } from 'geojson';
+import Feature from 'ol/Feature';
+import Geometry from 'ol/geom/Geometry';
+import { StyleLike } from 'ol/style/Style';
 
 export type LonLatCoords = [number, number];
 
@@ -27,6 +30,7 @@ export interface MapContextLayerWfs {
   type: 'wfs';
   url: string;
   name: string;
+  style?: StyleLike;
 }
 
 export type MapContextLayerWmts = {
@@ -39,6 +43,7 @@ export type MapContextLayerXyz = {
 
 export type MapContextLayerGeojson = {
   type: 'geojson';
+  style?: StyleLike;
 } & (
   | {
       url: string;
@@ -78,6 +83,6 @@ export interface MapContext {
 
 export interface FeaturesClickedEvent extends CustomEvent {
   detail: {
-    features: Feature[][];
+    features: Feature<Geometry>[][];
   };
 }

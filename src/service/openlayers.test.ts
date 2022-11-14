@@ -22,15 +22,23 @@ import ImageWMS from 'ol/source/ImageWMS';
 import ImageLayer from 'ol/layer/Image';
 import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS';
-import { LonLatCoords, MapContextLayerWms } from '../model';
+import {
+  LonLatCoords,
+  MapContextLayerGeojson,
+  MapContextLayerWfs,
+  MapContextLayerWms,
+} from '../model';
 import BaseLayer from 'ol/layer/Base';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import WMTS from 'ol/source/WMTS';
 import { FEATURE_COLLECTION_POLYGON_FIXTURE_4326 } from '../fixtures/geojson';
 import OlFeature from 'ol/Feature';
+import Feature from 'ol/Feature';
 import { Point } from 'ol/geom';
 import { fromLonLat } from 'ol/proj';
+import GeoJSON from 'ol/format/GeoJSON';
+import { Circle, Fill, Style } from 'ol/style';
 
 describe('openlayers functions', () => {
   let map;
@@ -79,6 +87,15 @@ describe('openlayers functions', () => {
 
   describe('addLayer', () => {
     let layer;
+    let style;
+    beforeEach(() => {
+      style = new Style({
+        image: new Circle({
+          fill: new Fill({ color: 'red' }),
+          radius: 3,
+        }),
+      });
+    });
     describe('generic properties', () => {
       beforeEach(async () => {
         layer = await addLayer(map, MAP_CTX_LAYER_WMS_FIXTURE, 4);
@@ -113,7 +130,11 @@ describe('openlayers functions', () => {
     });
     describe('WFS', () => {
       beforeEach(async () => {
-        layer = await addLayer(map, MAP_CTX_LAYER_WFS_FIXTURE, 0);
+        layer = await addLayer(
+          map,
+          { ...MAP_CTX_LAYER_WFS_FIXTURE, style } as MapContextLayerWfs,
+          0
+        );
       });
       it('creates a Vector layer with a Vector source', () => {
         expect(layer).toBeInstanceOf(VectorLayer);
@@ -126,19 +147,36 @@ describe('openlayers functions', () => {
           'outputFormat=application/json&typename=ms:commune_actuelle_3857'
         );
       });
+      it('assigns the given style to the layer', () => {
+        expect(layer.getStyle()).toBe(style);
+      });
     });
     describe('GeoJSON (with inline data)', () => {
       beforeEach(async () => {
-        layer = await addLayer(map, MAP_CTX_LAYER_GEOJSON_FIXTURE, 0);
+        layer = await addLayer(
+          map,
+          { ...MAP_CTX_LAYER_GEOJSON_FIXTURE, style } as MapContextLayerGeojson,
+          0
+        );
       });
       it('creates a Vector layer with a WFS source', () => {
         expect(layer).toBeInstanceOf(VectorLayer);
         expect(layer.getSource()).toBeInstanceOf(VectorSource);
       });
+      it('assigns the given style to the layer', () => {
+        expect(layer.getStyle()).toBe(style);
+      });
     });
     describe('GeoJSON (with url)', () => {
       beforeEach(async () => {
-        layer = await addLayer(map, MAP_CTX_LAYER_GEOJSON_REMOTE_FIXTURE, 0);
+        layer = await addLayer(
+          map,
+          {
+            ...MAP_CTX_LAYER_GEOJSON_REMOTE_FIXTURE,
+            style,
+          } as MapContextLayerGeojson,
+          0
+        );
       });
       it('creates a Vector layer with a Vector source', () => {
         expect(layer).toBeInstanceOf(VectorLayer);
@@ -148,6 +186,9 @@ describe('openlayers functions', () => {
         expect(layer.getSource().getUrl()).toBe(
           MAP_CTX_LAYER_GEOJSON_REMOTE_FIXTURE.url
         );
+      });
+      it('assigns the given style to the layer', () => {
+        expect(layer.getStyle()).toBe(style);
       });
     });
     describe('WMTS', () => {
@@ -250,11 +291,22 @@ describe('openlayers functions', () => {
   });
 
   describe('getFeaturesAtCoordinate', () => {
+    let featuresPolygon;
+    let featuresPoint;
     beforeEach(() => {
       (window as any).fetchResponseFactory = (url) =>
         JSON.stringify(FEATURE_COLLECTION_POLYGON_FIXTURE_4326);
       setView(map, MAP_CTX_FIXTURE.view);
       map.renderSync();
+
+      featuresPolygon = new GeoJSON().readFeatures(
+        FEATURE_COLLECTION_POLYGON_FIXTURE_4326,
+        {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857',
+        }
+      );
+      featuresPoint = [new OlFeature(new Point([1000, 2000]))];
     });
     describe('with a mix of image and vector layers', () => {
       let featuresArrays;
@@ -278,13 +330,12 @@ describe('openlayers functions', () => {
         );
         wfsLayer = map.getLayers().item(1);
         geojsonLayer = map.getLayers().item(2);
-        const mockFeatures = [new OlFeature(new Point([1000, 2000]))];
         jest
           .spyOn(wfsLayer, 'getFeatures')
-          .mockImplementation(() => Promise.resolve(mockFeatures));
+          .mockImplementation(() => Promise.resolve(featuresPoint));
         jest
           .spyOn(geojsonLayer, 'getFeatures')
-          .mockImplementation(() => Promise.resolve(mockFeatures));
+          .mockImplementation(() => Promise.resolve(featuresPoint));
 
         // query features
         featuresArrays = await getFeaturesAtCoordinate(
@@ -295,30 +346,13 @@ describe('openlayers functions', () => {
       });
       it('resolves to an array of features arrays', () => {
         expect(featuresArrays).toEqual([
-          FEATURE_COLLECTION_POLYGON_FIXTURE_4326.features,
-          [
-            {
-              geometry: {
-                coordinates: [0.008983152841195214, 0.01796630538797217],
-                type: 'Point',
-              },
-              properties: null,
-              type: 'Feature',
-            },
-          ],
-          [
-            {
-              geometry: {
-                coordinates: [0.008983152841195214, 0.01796630538797217],
-                type: 'Point',
-              },
-              properties: null,
-              type: 'Feature',
-            },
-          ],
+          [expect.any(Feature)],
+          featuresPoint,
+          featuresPoint,
           [],
           [],
         ]);
+        expect(featuresArrays[0][0].getGeometry().getType()).toBe('Polygon');
       });
       it('calls getFeatures on the WFS layer', () => {
         expect(wfsLayer.getFeatures).toHaveBeenCalledTimes(1);
@@ -329,7 +363,7 @@ describe('openlayers functions', () => {
         expect(geojsonLayer.getFeatures).toHaveBeenCalledWith([50, 50]);
       });
     });
-    describe('with layers that are no queryable', () => {
+    describe('with layers that are not queryable', () => {
       let featuresArrays;
       beforeEach(async () => {
         const mapContext = {
@@ -354,7 +388,7 @@ describe('openlayers functions', () => {
       });
       it('returns an array with null for not queryable layers', () => {
         expect(featuresArrays).toEqual([
-          FEATURE_COLLECTION_POLYGON_FIXTURE_4326.features,
+          [expect.any(Feature)],
           null,
           null,
           null,

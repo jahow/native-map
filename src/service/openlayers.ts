@@ -23,8 +23,8 @@ import TileWMS from 'ol/source/TileWMS';
 import WMTS from 'ol/source/WMTS';
 import { bbox as bboxStrategy } from 'ol/loadingstrategy';
 import BaseLayer from 'ol/layer/Base';
-import OlFeature from 'ol/Feature';
-import { Feature, FeatureCollection } from 'geojson';
+import Feature from 'ol/Feature';
+import { FeatureCollection } from 'geojson';
 import { Geometry } from 'ol/geom';
 
 const DEFAULT_BASELAYER_CONTEXT: MapContextLayerXyz = {
@@ -133,6 +133,7 @@ function createLayerFromModel(
             },
             strategy: bboxStrategy,
           }),
+          style: layer.style,
           ...layerProps,
         })
       );
@@ -144,6 +145,7 @@ function createLayerFromModel(
               format: new GeoJSON(),
               url: layer.url,
             }),
+            style: layer.style,
             ...layerProps,
           })
         );
@@ -166,6 +168,7 @@ function createLayerFromModel(
             source: new VectorSource({
               features,
             }),
+            style: layer.style,
             ...layerProps,
           })
         );
@@ -197,26 +200,20 @@ function getVectorFeatures(
   layer: MapContextLayerWfs | MapContextLayerGeojson,
   map: OlMap,
   coordinate: LonLatCoords
-) {
+): Promise<Feature<Geometry>[]> {
   const olLayer = getMapLayerFromContextLayer(map, layer) as VectorLayer<
     VectorSource<Geometry>
   >;
-  const viewSrs = map.getView().getProjection();
-  return olLayer.getFeatures(map.getPixelFromCoordinate(coordinate)).then(
-    (features) =>
-      new GeoJSON().writeFeaturesObject(features, {
-        dataProjection: 'EPSG:4326',
-        featureProjection: viewSrs,
-      }).features
-  );
+  return olLayer.getFeatures(map.getPixelFromCoordinate(coordinate));
 }
 
 function getFeaturesFromLayer(
   layer: MapContextLayer,
   map: OlMap,
   coordinate: LonLatCoords
-): Promise<Feature[] | null> {
+): Promise<Feature<Geometry>[] | null> {
   if (layer.notQueryable) return Promise.resolve(null);
+  const viewSrs = map.getView().getProjection();
   switch (layer.type) {
     case 'wmts':
     case 'xyz':
@@ -224,7 +221,12 @@ function getFeaturesFromLayer(
     case 'wms':
       return fetch(getGFIUrl(layer, map, coordinate))
         .then((resp) => resp.json())
-        .then((json: FeatureCollection) => json?.features || []);
+        .then((json: FeatureCollection) =>
+          new GeoJSON().readFeatures(json, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: viewSrs,
+          })
+        );
     case 'wfs':
     case 'geojson':
       return getVectorFeatures(layer, map, coordinate);
@@ -314,7 +316,7 @@ export async function getFeaturesAtCoordinate(
   map: OlMap,
   context: MapContext,
   coordinate: LonLatCoords
-): Promise<(Feature[] | null)[]> {
+): Promise<(Feature<Geometry>[] | null)[]> {
   if (!context.layers) return [];
   return Promise.all(
     context.layers.map((layer) => getFeaturesFromLayer(layer, map, coordinate))
