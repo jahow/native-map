@@ -26,6 +26,8 @@ import BaseLayer from 'ol/layer/Base';
 import Feature from 'ol/Feature';
 import { FeatureCollection } from 'geojson';
 import { Geometry } from 'ol/geom';
+import Layer from 'ol/layer/Layer';
+import Source from 'ol/source/Source';
 
 const DEFAULT_BASELAYER_CONTEXT: MapContextLayerXyz = {
   type: 'xyz',
@@ -255,10 +257,12 @@ export async function addLayer(
 function getMapLayerFromContextLayer(
   olMap: OlMap,
   contextLayer: MapContextLayer
-) {
-  return olMap
-    .getAllLayers()
-    .find((olLayer) => olLayer.get('contextLayer') === contextLayer);
+): Layer<Source, any> | null {
+  return (
+    olMap
+      .getAllLayers()
+      .find((olLayer) => olLayer.get('contextLayer') === contextLayer) || null
+  );
 }
 
 export function removeLayer(olMap: OlMap, layer: MapContextLayer) {
@@ -324,4 +328,14 @@ export async function getFeaturesAtCoordinate(
     console.error('Something went wrong while querying layers', e);
     return [];
   });
+}
+
+/**
+ * @param map
+ * @param context
+ * @returns an array of OL layers in the same order as the layers provided in the context
+ */
+export function getMapLayers(map: OlMap, context: MapContext) {
+  if (!context.layers) return [];
+  return context.layers.map((layer) => getMapLayerFromContextLayer(map, layer));
 }

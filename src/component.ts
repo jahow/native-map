@@ -7,6 +7,7 @@ import {
   addLayer,
   createMap,
   getFeaturesAtCoordinate,
+  getMapLayers,
   removeLayer,
   setHasBaseMap,
   setView,
@@ -28,12 +29,21 @@ export class NativeMapElement extends HTMLElement {
   private olMap: OlMap = null;
 
   get context() {
-    return {}; // TODO: return current map state
+    return this.incomingContext;
   }
 
   set context(val: MapContext) {
     this.handleContextChanged(val, this.incomingContext);
     this.incomingContext = val;
+  }
+
+  get olView() {
+    return this.olMap?.getView() || null;
+  }
+
+  get olLayers() {
+    if (!this.olMap || !this.incomingContext) return [];
+    return getMapLayers(this.olMap, this.incomingContext);
   }
 
   constructor() {

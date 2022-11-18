@@ -12,6 +12,7 @@ import {
   addLayer,
   createMap,
   getFeaturesAtCoordinate,
+  getMapLayers,
   removeLayer,
   setHasBaseMap,
   setView,
@@ -393,6 +394,43 @@ describe('openlayers functions', () => {
           null,
           null,
         ]);
+      });
+    });
+  });
+
+  describe('getMapLayers', () => {
+    let mapContext;
+    beforeEach(() => {
+      mapContext = {
+        ...MAP_CTX_FIXTURE,
+        layers: [
+          MAP_CTX_LAYER_WMS_FIXTURE,
+          MAP_CTX_LAYER_WFS_FIXTURE,
+          MAP_CTX_LAYER_WMTS_FIXTURE,
+        ],
+      };
+    });
+    describe('layers not ready', () => {
+      it('returns null', () => {
+        expect(getMapLayers(map, mapContext)).toEqual([null, null, null]);
+      });
+    });
+    describe('layers created and ready', () => {
+      beforeEach(async () => {
+        await Promise.all(
+          mapContext.layers.map(
+            async (contextLayer, i) => await addLayer(map, contextLayer, i)
+          )
+        );
+      });
+      it('returns OL layers according to the context layers order', () => {
+        const mapLayers = getMapLayers(map, mapContext);
+        expect(mapLayers[0]).toBeInstanceOf(ImageLayer);
+        expect(mapLayers[0].getSource()).toBeInstanceOf(ImageWMS);
+        expect(mapLayers[1]).toBeInstanceOf(VectorLayer);
+        expect(mapLayers[1].getSource()).toBeInstanceOf(VectorSource);
+        expect(mapLayers[2]).toBeInstanceOf(TileLayer);
+        expect(mapLayers[2].getSource()).toBeInstanceOf(WMTS);
       });
     });
   });
