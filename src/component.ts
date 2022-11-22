@@ -37,7 +37,7 @@ document.head.appendChild(elStyle);
 export class NativeMapElement extends HTMLElement {
   private incomingContext: MapContext = null;
   private olMap: OlMap = null;
-  private featuresClickedKey: EventsKey;
+  private featuresClickedKey: EventsKey = null;
 
   get context() {
     return this.incomingContext;
@@ -71,6 +71,7 @@ export class NativeMapElement extends HTMLElement {
 
   disconnectedCallback() {
     if (this.olMap === null) return;
+    this.disableFeaturesClicked();
     this.olMap.dispose();
     this.olMap = null;
   }
@@ -80,8 +81,6 @@ export class NativeMapElement extends HTMLElement {
     listener: (this: HTMLElement, ev: EventMap[K]) => unknown,
     options?: boolean | AddEventListenerOptions
   ) {
-    if (this.olMap === null)
-      throw new Error('[native-map] element is not attached to DOM yet');
     if (type === 'featuresClicked') {
       this.enableFeaturesClicked();
     }
@@ -100,6 +99,9 @@ export class NativeMapElement extends HTMLElement {
   }
 
   private enableFeaturesClicked() {
+    if (this.olMap === null)
+      throw new Error('[native-map] element is not attached to DOM yet');
+    if (this.featuresClickedKey) return;
     this.featuresClickedKey = this.olMap.on('click', async (event) => {
       const coords = event.coordinate;
       const features = await getFeaturesAtCoordinate(
@@ -117,6 +119,7 @@ export class NativeMapElement extends HTMLElement {
 
   private disableFeaturesClicked() {
     unByKey(this.featuresClickedKey);
+    this.featuresClickedKey = null;
   }
 
   /**
