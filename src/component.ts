@@ -13,7 +13,10 @@ import {
   setView,
 } from './service/openlayers';
 import OlMap from 'ol/Map';
+import OlView from 'ol/View';
 import { FeaturesClickedEvent, LonLatCoords, MapContext } from './model';
+import Layer from 'ol/layer/Layer';
+import Source from 'ol/source/Source';
 
 // add default styling for native-map elements
 const elStyle = document.createElement('style');
@@ -37,11 +40,11 @@ export class NativeMapElement extends HTMLElement {
     this.incomingContext = val;
   }
 
-  get olView() {
+  get olView(): OlView {
     return this.olMap?.getView() || null;
   }
 
-  get olLayers() {
+  get olLayers(): (Layer<Source, any> | null)[] {
     if (!this.olMap || !this.incomingContext) return [];
     return getMapLayers(this.olMap, this.incomingContext);
   }
