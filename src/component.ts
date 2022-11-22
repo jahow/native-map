@@ -14,9 +14,16 @@ import {
 } from './service/openlayers';
 import OlMap from 'ol/Map';
 import OlView from 'ol/View';
-import { FeaturesClickedEvent, LonLatCoords, MapContext } from './model';
+import {
+  EventMap,
+  FeaturesClickedEvent,
+  LonLatCoords,
+  MapContext,
+} from './model';
 import Layer from 'ol/layer/Layer';
 import Source from 'ol/source/Source';
+import { EventsKey } from 'ol/events';
+import { unByKey } from 'ol/Observable';
 
 // add default styling for native-map elements
 const elStyle = document.createElement('style');
@@ -30,6 +37,7 @@ document.head.appendChild(elStyle);
 export class NativeMapElement extends HTMLElement {
   private incomingContext: MapContext = null;
   private olMap: OlMap = null;
+  private featuresClickedKey: EventsKey;
 
   get context() {
     return this.incomingContext;
@@ -59,7 +67,40 @@ export class NativeMapElement extends HTMLElement {
       this.handleContextChanged(this.incomingContext, null);
     }
     this.olMap.updateSize();
-    this.olMap.on('click', async (event) => {
+  }
+
+  disconnectedCallback() {
+    if (this.olMap === null) return;
+    this.olMap.dispose();
+    this.olMap = null;
+  }
+
+  addEventListener<K extends keyof EventMap>(
+    type: K,
+    listener: (this: HTMLElement, ev: EventMap[K]) => unknown,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    if (this.olMap === null)
+      throw new Error('[native-map] element is not attached to DOM yet');
+    if (type === 'featuresClicked') {
+      this.enableFeaturesClicked();
+    }
+    return super.addEventListener(type, listener, options);
+  }
+
+  removeEventListener<K extends keyof EventMap>(
+    type: K,
+    listener: (this: HTMLElement, ev: EventMap[K]) => unknown,
+    options?: boolean | EventListenerOptions
+  ) {
+    if (type === 'featuresClicked') {
+      this.disableFeaturesClicked();
+    }
+    return super.removeEventListener(type, listener, options);
+  }
+
+  private enableFeaturesClicked() {
+    this.featuresClickedKey = this.olMap.on('click', async (event) => {
       const coords = event.coordinate;
       const features = await getFeaturesAtCoordinate(
         this.olMap,
@@ -74,17 +115,15 @@ export class NativeMapElement extends HTMLElement {
     });
   }
 
-  disconnectedCallback() {
-    if (this.olMap === null) return;
-    this.olMap.dispose();
-    this.olMap = null;
+  private disableFeaturesClicked() {
+    unByKey(this.featuresClickedKey);
   }
 
   /**
    * @param {MapContext} newContext
    * @param {MapContext|null} oldContext
    */
-  handleContextChanged(newContext: MapContext, oldContext: MapContext) {
+  private handleContextChanged(newContext: MapContext, oldContext: MapContext) {
     if (this.olMap === null) return;
     getAddedLayers(newContext, oldContext).map(({ layer, position }) =>
       addLayer(this.olMap, layer, position)

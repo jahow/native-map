@@ -86,3 +86,7 @@ export interface FeaturesClickedEvent extends CustomEvent {
     features: Feature<Geometry>[][];
   };
 }
+
+export type EventMap = {
+  featuresClicked: FeaturesClickedEvent;
+};
