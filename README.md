@@ -2,8 +2,6 @@
 
 A native web component that shows an interactive map based on a given context.
 
-> DISCLAIMER: not yet published on NPM!!
-
 [Live demo here!](https://jahow.github.io/native-map/master/)
 
 ## Usage
