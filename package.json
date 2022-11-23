@@ -1,6 +1,6 @@
 {
   "name": "@camptocamp/native-map",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A native web component used to render interactive maps",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
