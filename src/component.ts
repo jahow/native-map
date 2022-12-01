@@ -57,6 +57,10 @@ export class NativeMapElement extends HTMLElement {
     return getMapLayers(this.olMap, this.incomingContext);
   }
 
+  get olInteractions() {
+    return this.olMap.getInteractions();
+  }
+
   constructor() {
     super();
   }
